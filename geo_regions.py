@@ -263,6 +263,24 @@ def get_region_extent(region = 'hsofs_region'):
         defs['lim']['xmax']  = -80.5
         defs['lim']['ymin']  =  25.34
         defs['lim']['ymax']  =  25.8
+    #MICHEAL
+    elif region == 'fl_all':
+        defs['lim']['xmin']  = -88
+        defs['lim']['xmax']  = -79
+        defs['lim']['ymin']  =  23.5
+        defs['lim']['ymax']  =  32 
+    elif region == 'mic_landfall':
+        defs['lim']['xmin']  = -87.7
+        defs['lim']['xmax']  = -81.31
+        defs['lim']['ymin']  =  27.4
+        defs['lim']['ymax']  =  31.01 
+    elif region == 'mic_landfall_zoom':
+        defs['lim']['xmin']  = -86.70
+        defs['lim']['xmax']  = -83.00
+        defs['lim']['ymin']  =  29.00
+        defs['lim']['ymax']  =  31.01 
+
+
     
     return defs['lim']
 

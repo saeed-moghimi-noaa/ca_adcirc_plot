@@ -43,6 +43,11 @@ import netCDF4 as n4
 import seaborn as sns
 import pynmd.plotting.colormaps as cmaps
 
+
+sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
+import adcirc
+
+
 #sns.set_style(style='dark')
 sns.set_style(style='ticks')
 
@@ -72,7 +77,10 @@ ftype = '.png'
 
 
 for x in base_info.cases[base_info.key0]['dir'].split('/'):
-    if 'rt_' in x:  prefix = x
+    if 'rt_' in x:  
+        prefix = x
+    else:
+        prefix = ''.join(base_info.cases[base_info.key0]['dir'].split('/')[-3:])
 
 prefix = 'hwm_' + prefix
 out_dir = base_info.out_dir + prefix + curr_time+ '/'
@@ -308,9 +316,9 @@ lon,lat,tri  = adcp.ReadTri(base_info.cases[base_info.key1]['dir'])
 
 # Read hwm from csv file
 df = pd.read_csv(base_info.hwm_fname)
-lon_hwm = df.lon.values
-lat_hwm = df.lat.values
-hwm     = df.elev_msl_m.values
+lon_hwm = df.longitude.values
+lat_hwm = df.latitude.values
+hwm     = df.elev_m.values
 #
 taylor_data = {}
 stats_data  = {}
@@ -671,7 +679,8 @@ plt.close('all')
 #dfa.drop('lon',axis=1,inplace=True)
 #dfa.drop('lat',axis=1,inplace=True)
 
-  
+pandas_plots = False
+
 if pandas_plots:
    
     ###

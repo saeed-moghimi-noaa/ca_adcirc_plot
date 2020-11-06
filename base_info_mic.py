@@ -19,26 +19,24 @@ import datetime
 cases = defaultdict(dict)
 
 #### INPUTS ####
-base_dir_sm   = '/scratch2/COASTAL/coastal/noscrub/Saeed.Moghimi/01_stmp_ca/stmp20_florence/'
-track_fname   = '/scratch2/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/01_data/tracks/florence_bal062018.dat'
-hwm_fname     = '/scratch2/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/01_data/hwm/events/hwm_ike.csv'
-base_dir_coops_piks = 'xxx'
-base_dir_obs        = '/scratch2/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/01_data/coops_ndbc_data/'
+base_dir_sm   = '/scratch2/COASTAL/coastal/noscrub/Yuji.Funakoshi/nsem-workflow/data/'
+base_dir_obs  = '/scratch2/COASTAL/coastal/noscrub/shared/Saeed.Moghimi/shared_with_Yuji/obs/'
+track_fname   = '/scratch2/COASTAL/coastal/noscrub/shared/Saeed.Moghimi/shared_with_Yuji/obs/best_tracks/mic_bal142018.dat'
+hwm_fname     = '/scratch2/COASTAL/coastal/noscrub/shared/Saeed.Moghimi/shared_with_Yuji/obs/hwm/michael2018.csv'
+#
+#
+nwm_channel_pnts    = '/scratch2/COASTAL/coastal/noscrub/shared/Saeed.Moghimi/shared_with_Yuji/nwm_base_info_sample/channel_points/NWM_v1.1_nc_tools_v1/spatialMetadataFiles/nwm_v1.1_geospatial_data_template_channel_point.nc'
+nwm_channel_geom    = '/scratch2/COASTAL/coastal/noscrub/shared/Saeed.Moghimi/shared_with_Yuji/nwm_base_info_sample/channel_geom/nwm_v1.1/nwm_fcst_points_comid_lat_lon-v1-1_ALL.csv'
+nwm_results_dir     = '/scratch2/COASTAL/coastal/noscrub/shared/Saeed.Moghimi/shared_with_Yuji/nwm_base_info_sample/nwm.20180226/'
 
-nwm_channel_pnts    = '/scratch2/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/01_data/nwm_base_info/channel_points/NWM_v1.1_nc_tools_v1/spatialMetadataFiles/nwm_v1.1_geospatial_data_template_channel_point.nc'
-nwm_channel_geom    = '/scratch2/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/01_data/nwm_base_info/channel_geom/nwm_v1.1/nwm_fcst_points_comid_lat_lon-v1-1_ALL.csv'
-nwm_results_dir     = '/scratch2/COASTAL/coastal/save/Saeed.Moghimi/models/wrfhydro/test_data/nwm.20180226/'
-
-
-
-name = 'FLORENCE'
-year = '2018'
+storm_name = 'MICHAEL'
+storm_year = '2018'
 
 # map_plot_options
-plot_adc_fort       = True
-plot_adc_maxele     = False
+plot_adc_fort       = False
+plot_adc_maxele     = True
 plot_nems_fields    = False
-plot_forcing_files  = True
+plot_forcing_files  = False
 plot_nwm_files      = False
 plot_transects      = False
 plot_mesh           = False
@@ -48,20 +46,19 @@ local_bias_cor = True
 #HWM proximity limit
 prox_max = 0.0075 * 1  #grid size * n
 
-if False:
+if True:
     #Base run only tide
     key  = '00-atm:n-tid:y-wav:n'
-    cases[key]['dir']    = base_dir_sm + '/a10_FLO_OCN_SPINUP_v1.0/rt_20200306_h20_m10_s48r471/' 
+    cases[key]['dir']    = base_dir_sm + '/michael.tide_baserun.20201103/run/' 
     cases[key]['label']  = 'Only tide' 
     cases[key]['hsig_file'] = None
     cases[key]['wdir_file'] = None
     key0 = key 
 
-if True:
+if False:
     # 
     key  = '09-atm:y-tid:y-wav:n'
-    #cases[key]['dir']    = base_dir_sm + '/a50_FLO_ATM2OCN_v2.1_new_hwrf_land_mask/rt_20200306_h20_m42_s52r091/'   
-    cases[key]['dir']    = base_dir_sm + '/a50_FLO_ATM2OCN_v2.2_extended/rt_20200313_h18_m12_s49r072/'   
+    cases[key]['dir']    = base_dir_sm + '/michael.atm2ocn.20201029/run/'   
     cases[key]['label']  = 'ATM'    
     cases[key]['hsig_file'] = None
     cases[key]['wdir_file'] = None
@@ -70,45 +67,29 @@ if True:
 if True:
     #2way wav-ocn
     key  = '11-atm:y-tid:y-wav:y'
-    #cases[key]['dir']    = base_dir_sm + 'a70_FLO_ATM_WAV2OCN_v2.1_new_hwrf_land_mask_hera/rt_20200306_h21_m45_s06r726/' 
-    cases[key]['dir']    = base_dir_sm + 'a70_FLO_ATM_WAV2OCN_v2.2_extended/rt_20200313_h18_m16_s45r503/'      
+    cases[key]['dir']    = base_dir_sm + '/michael.atm4wav2ocn.20201102/run/'      
     cases[key]['label']  = 'ATM&WAV'    
-    cases[key]['hsig_file'] = '/scratch2/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/nsemodel_inps/hsofs_forcings/flo_v0/inp_ww3/ww3.Florence.HWRF_HRRR_CFSR.201809_hs.nc'
-    cases[key]['wdir_file'] = '/scratch2/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/nsemodel_inps/hsofs_forcings/flo_v0/inp_ww3/ww3.Florence.HWRF_HRRR_CFSR.201809_dir.nc'
+    cases[key]['hsig_file'] = '/scratch2/COASTAL/coastal/save/NAMED_STORMS/Michael/WW3/ww3.2018_hs.nc'
+    cases[key]['wdir_file'] = '/scratch2/COASTAL/coastal/save/NAMED_STORMS/Michael/WW3/ww3.2018_dir.nc'
     key1 = key 
 
     ###########
 
-#out_dir  = cases[key1]['dir'] +'/../05_post_coupled/'
-out_dir  = base_dir_sm  + '/06_post_coupled/'
+out_dir  = '/scratch2/COASTAL/coastal/noscrub/shared/Saeed.Moghimi/shared_with_Yuji/mic/post/'
 
 #########################  Variable Limits Settings ####################################
+
+tide_spin_start_date   = datetime.datetime(2018,9,22,0,0,0) # this is also tde_ref_date (tide_fact calc)
+
 tim_lim = {}
-#tim_lim['xmin'] = datetime.datetime(2008, 9,  5 )
-#tim_lim['xmax'] = datetime.datetime(2008, 9, 13,11 )
-
-#tim_lim['xmin'] = datetime.datetime(2008, 9, 13,10 ) - datetime.timedelta(4)
-#tim_lim['xmax'] = datetime.datetime(2008, 9, 13,10 ) + datetime.timedelta(1)
-
-#tim_lim['xmin'] = datetime.datetime(2008, 9, 13,10 ) - datetime.timedelta(0.5)
-#tim_lim['xmax'] = datetime.datetime(2008, 9, 13,10 ) + datetime.timedelta(0.5)
-
-#tim_lim['xmin'] = datetime.datetime(2008, 9, 7,15 ) 
-#tim_lim['xmax'] = datetime.datetime(2008, 9, 9,5 )
-
-#maps anim
-#tim_lim['xmin'] = datetime.datetime(2008, 9,  5 )
-tim_lim['xmin'] = datetime.datetime(2018, 9, 10)  -  datetime.timedelta(20.0)
-tim_lim['xmax'] = datetime.datetime(2018, 9, 18)  +  datetime.timedelta(20.0)
+tim_lim['xmin'] = tide_spin_start_date + datetime.timedelta(days=14.75)
+tim_lim['xmax'] = tide_spin_start_date + datetime.timedelta(days=20.5)
 
 if True:
     defs['elev']['cmap']  =  maps.jetMinWi
     defs['elev']['label']  =  'Surge [m]'
     defs['elev']['vmin']  =  0
-    defs['elev']['vmax']  =  7
-    
-    #defs['elev']['vmin']  =  2
-    #defs['elev']['vmax']  =  7    
+    defs['elev']['vmax']  =  6
     
 else:
     defs['elev']['label']  =  'Wave set-up [m]'
@@ -165,13 +146,17 @@ defs['wind']['fname'] = 'fort.74.nc'
 #varnames = ['hs','wind','elev'] #,'maxele']
 varnames = ['elev'] #,'maxele']
 #varnames = ['elev'] #,'maxele']
-varnames = ['wind']#,'elev'] #,'maxele']
+#varnames = ['wind']#,'elev'] #,'maxele']
 
 
 
 ##### SELECLT GEO REGION TO PLOT ########################
 #regions = ['isa_landfall_zoom','isa_landfall','isa_local','isa_region','hsofs_region']
-regions = ['hsofs_region']
+
+
+#regions = ['hsofs_region','fl_all', 'mic_landfall', 'mic_landfall_zoom']
+#regions = ['mic_landfall']
+regions = ['fl_all']
 
 #station_selected_list = None     # for COOPS time series plot
 

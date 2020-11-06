@@ -128,7 +128,7 @@ def read_csv(obs_dir, name, year, label):
     
     return table,data
 
-def get_station_ssh(fort61):
+def get_station_ssh(fort61,lim):
     """
         Read model ssh
     """
@@ -143,7 +143,18 @@ def get_station_ssh(fort61):
     stationIDs = []
     mod    = []
     ind = np.arange(len(sta_lat))
-    for ista in ind:
+
+    [ind_bbox] = np.where((sta_lon > lim['xmin']) & 
+                    (sta_lon < lim['xmax']) & 
+                    (sta_lat > lim['ymin']) & 
+                    (sta_lat < lim['ymax']))
+    
+    if False:
+        indi = ind
+    else:
+        indi = ind_bbox   
+    
+    for ista in indi:
         stationID = sta_nam[ista].tostring().decode().rstrip()
         stationIDs.append(stationID)
         mod_tmp = pd.DataFrame(data = np.c_[sta_date, sta_zeta[:,ista]], columns=['date_time',  'ssh']).set_index('date_time')
@@ -151,7 +162,9 @@ def get_station_ssh(fort61):
         mod.append(mod_tmp)
 
     stationIDs = np.array(stationIDs)
-    mod_table = pd.DataFrame(data = np.c_[ind, stationIDs], columns=['ind',  'station_code'])
+    
+    data = np.c_[indi, stationIDs]
+    mod_table = pd.DataFrame(data = data, columns=['ind',  'station_code'])
    
     return mod,mod_table
 
@@ -439,9 +452,11 @@ def plot_map(sta_tab=[],comm_tab=[],prefix='',iplot=0):
 
 #read Obs data
 print (' read from OBS CSV files')
-try:
-    print ('   >  ssh from CSV files')
-    ssh_table,ssh          = read_csv (base_info.base_dir_obs, base_info.name, base_info.year, label='coops_ssh' )
+#try:
+print ('   >  ssh from CSV files')
+ssh_table,ssh = read_csv (base_info.base_dir_obs, base_info.storm_name, base_info.storm_year, label='coops_ssh' )
+
+"""
 except:
     print ('     >  No ssh CSV files')            
 
@@ -462,11 +477,18 @@ try:
     wav_ocn_table, wav_ocn = read_csv (base_info.base_dir_obs, name, year, label='ndbc_wave' )
 except:
     print ('     > no NDBC wave CSV files')  
-
+"""
 
 for x in base_info.cases[base_info.key0]['dir'].split('/'):
-    if 'rt_' in x:  prefix = x
+    if 'rt_' in x:  
+        prefix = x
+    else:
+        prefix = ''.join(base_info.cases[base_info.key0]['dir'].split('/')[-3:])
 
+
+prefix = 'time_series_' + prefix 
+
+        
 t1 = tim_lim['xmin'].isoformat()[2:13] + '_' + tim_lim['xmax'].isoformat()[2:13] + '_' + curr_time
 
 out_dir = base_info.out_dir + prefix + t1 + '/'
@@ -490,7 +512,7 @@ top1 = 0.9
 wspace1 = 0.1
 hspace1 = 0.15
 #
-dpi = 600
+dpi = 300
 
 #for map plot
 lon,lat,tri  = adcp.ReadTri(base_info.cases[base_info.key1]['dir'])
@@ -518,15 +540,13 @@ defs['elev']['label']  =  'Elev. [m]'
 
 #get stations in bounding box
 
-#defs['lim'] = get_region_extent(region = base_info.regions[0] )
+defs['lim'] = get_region_extent(region = base_info.regions[0] )
 #ind_sta_all, ncv0, stationIDs_model = get_station_list(fort61, defs['lim'])
 
 #sta_old_list = []
 #for fpik in fpiks:
 #    stationID_new = fpik.split('/')[-1][0:7]
 #    sta_old_list.append(stationID_new)
-
-
 
 
 if base_info.station_selected_list is not None:
@@ -536,7 +556,7 @@ else:
     ##############3
     #This is just to generate the common list of stations
     fort61 = base_info.cases[base_info.cases.keys()[0]]['dir'] + '/fort.61.nc'
-    mod , mod_table = get_station_ssh(fort61)
+    mod , mod_table = get_station_ssh(fort61,defs['lim'] )
     tmp_ssh_table = ssh_table.sort_values('lat')
     common  = set(mod_table['station_code']).intersection(tmp_ssh_table  ['station_code'].values)
     stationIDs  = np.sort(list(common))
@@ -551,7 +571,7 @@ all_stations = {}
 
 if plot_timeseries:
     icol = 2
-    irow_max = 3
+    irow_max = 2
     
     
     nplot = len(sta_list_all)// (irow_max * icol)
@@ -602,24 +622,25 @@ if plot_timeseries:
                         # try:
                         print key
                         fort61 = base_info.cases[key]['dir'] + '/fort.61.nc'
-                        mod , mod_table = get_station_ssh(fort61)
+                        mod , mod_table = get_station_ssh(fort61,defs['lim'])
      
+                        
                         ############# Sea Surface height analysis ########################
                         # For simplicity we will use only the stations that have both wind speed and sea surface height and reject those that have only one or the other.
-                        tmp_ssh_table = ssh_table.sort_values('lat')
+                        #tmp_ssh_table = ssh_table.sort_values('lat')
 
                         common  = set(ssh_table['station_code']).intersection(mod_table  ['station_code'].values)
                         #common  = set(mod_table['station_code']).intersection(tmp_ssh_table  ['station_code'].values)
                         common  = np.sort(list(common))
-                        ssh_obs, ssh_mod , comm_tab = [], [], []
-                        for station in common:
-                            ssh_obs.extend([obs for obs in ssh   if obs._metadata['station_code'] == station])
-                            ssh_mod.extend([obm for obm in mod   if obm._metadata                 == station])
+                        #ssh_obs, ssh_mod , comm_tab = [], [], []
+                        #for station in common:
+                        #    ssh_obs.extend([obs for obs in ssh   if obs._metadata['station_code'] == station])
+                        #    ssh_mod.extend([obm for obm in mod   if obm._metadata                 == station])
                        
 
                         comm_tab = ssh_table[ssh_table['station_code'].isin(common)]   
 
-                        
+
                         #station_names, stationIDs = [],[]
                         #for obs in ssh_obs:
                         #    station_names.append(obs._metadata['station_name'])
@@ -628,23 +649,23 @@ if plot_timeseries:
                         stationID = sta#stationIDs[ista]
                         #sta_list.append(stationID)
                         print stationID
-                        ind1 = return_index (stationID, ssh_table['station_code'].values)
-                        
-                        header = 'Station: ' + stationID + ' at ' + ssh_table.index[ind1]
+                        indo = return_index (stationID, ssh_table['station_code'].values)
+                        indm = return_index (stationID, mod_table['station_code'].values)
+                        header = 'Station: ' + stationID + ' at ' + ssh_table.index[indo]
                         prefix =  header.replace(':','_').replace(' ','_').replace(',','_').replace(',','_')
                     
                         print (header)
      
-                        defs['elev']['vmin'] = 1.2 * max(ssh_obs[ind1].max().values,ssh_mod[ind1].max().values )
-                        defs['elev']['vmax'] = 1.1 * min(ssh_obs[ind1].min().values,ssh_mod[ind1].min().values )
+                        defs['elev']['vmin'] = 1.2 * max(ssh[indo].max().values,mod[indm].max().values )
+                        defs['elev']['vmax'] = 1.1 * min(ssh[indo].min().values,mod[indm].min().values )
                         
                         
                         # model
-                        dates1 = datetime64todatetime(ssh_mod[ind1].index) 
-                        val1   = ssh_mod[ind1].values 
+                        dates1 = datetime64todatetime(mod[indm].index) 
+                        val1   = mod[indm].values 
                         
                         #model data bias
-                        bias = np.mean(ssh_obs[ind1].values)- np.mean(val1)
+                        bias = np.mean(ssh[indo].values)- np.mean(val1)
                                                                       
                         if base_info.local_bias_cor:
                             val1 = val1 + bias
@@ -683,8 +704,8 @@ if plot_timeseries:
                         # pass  
                   
                 # plot OBS station data
-                dates = datetime64todatetime(ssh_obs[ind1].index) 
-                val   = ssh_obs[ind1].values          
+                dates = datetime64todatetime(ssh[indo].index) 
+                val   = ssh[indo].values          
                 
                 data = dict(
                       xx  = dates[::5]       ,
@@ -759,10 +780,10 @@ if plot_timeseries:
                 #if not no_data:
                 #    all_stations[stationID] = stations
 
-        #plt.savefig(out_dir + '/' +str(100+iplot)+ '_tim_' +prefix + '_' + '.png', dpi=dpi) 
-        plt.savefig(out_dir + '/' +str(100+iplot)+ '_tim_' +prefix + '_' + '.pdf') 
+        plt.savefig(out_dir + '/' +str(100+iplot)+ '_tim_' +prefix + '_' + '.png', dpi=dpi) 
+        #plt.savefig(out_dir + '/' +str(100+iplot)+ '_tim_' +prefix + '_' + '.pdf') 
 
-        #plt.close('all')
+        plt.close('all')
 
         ##################################################################################
         sta_tab = ssh_table[ssh_table['station_code'].isin(sta_list)]   

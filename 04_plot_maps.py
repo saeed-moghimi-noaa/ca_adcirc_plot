@@ -33,7 +33,7 @@ import os,sys
 import glob
 from dateutil import parser
 
-sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy/')
+sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
 import adcirc
 from atcf import readTrack
 
@@ -233,7 +233,7 @@ def plot_map(ax,tri,val,var=None,lim=None,dep=None, pres=None,no_axes_label=True
         #cond2 = ax.tricontour(tri,dep+0.1 ,levels=[25.0]  ,colors='k',lw=0.2, linestyles='dashed')
         #cond3 = ax.tricontour(tri,dep+0.1 ,levels=[50.0] ,colors='k',lw=0.2, linestyles='dashed')
 
-    if plot_mesh:
+    if base_info.plot_mesh:
         ax.triplot(tri, 'k-', lw=0.1, alpha=0.6)
     
     if pres is not None:
@@ -395,7 +395,7 @@ def read_track(fname=None):
     
 #################################################################################################
 if False:
-    if base_info.name == 'IKE':
+    if base_info.storm_year == 'IKE':
         #read IKE track
         track = read_track()
     
@@ -405,7 +405,7 @@ if False:
             gustav_fname = '/scratch4/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/data/tracks/gustav_aal072008.dat'
             gus_track = read_track(fname=gustav_fname)
     
-    if base_info.name == 'ISA':
+    if base_info.storm_year == 'ISA':
         print ' gfgfdgfg' 
 
     isabel_fname = '/scratch4/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/01_data/tracks/isabel_aal132003.dat'
@@ -527,9 +527,9 @@ if base_info.plot_adc_fort:
                 #sys.exit()
                 
                 if not base_info.vec:
-                    plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth, pres=pres,plot_mesh=False)
+                    plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth, pres=pres,plot_mesh=base_info.plot_mesh)
                 else:
-                    plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth, pres=pres,plot_mesh=False,u=u,v=v)
+                    plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth, pres=pres,plot_mesh=base_info.plot_mesh,u=u,v=v)
 
                 #track = readTrack(base_info.track_fname)
                 #ax.plot(track['lon'],track['lat'],'r-',lw=2,alpha=1,ms=10, markevery = 5, marker = r'$\bigotimes$',mec='None',mew=2)  #marker = r'$\S$'
@@ -547,11 +547,11 @@ if base_info.plot_adc_fort:
                 val_max = val[ind_box][ind_max]
                 ax.scatter(lon_max,lat_max,c='m',s=15,zorder=3)
                 
-                #ax.set_title(base_info.name+' '+base_info.cases[base_info.key1]['label']+' - ' +\
+                #ax.set_title(base_info.storm_name + ' ' +base_info.storm_year+' '+base_info.cases[base_info.key1]['label']+' - ' +\
                 #    base_info.cases[base_info.key0]['label']+'\n  '+defs[varname]['label'] +\
                 #    ' Date: ' + date.isoformat() +'\n Max. Val. =  %.2g' %val.max() + '[m]')
                 
-                ax.set_title(base_info.name+' '+title1+'\n'+ ' Date: ' + date.isoformat() +'\n'+' Max. Val. =  %.2g' %val_max)
+                ax.set_title(base_info.storm_name + ' ' +base_info.storm_year+' '+title1+'\n'+ ' Date: ' + date.isoformat() +'\n'+' Max. Val. =  %.2g' %val_max)
                 
                 
                 date_str = date.isoformat().replace(':','-')
@@ -606,7 +606,7 @@ if base_info.plot_adc_maxele:
         
         fig.set_size_inches(9,9*1.4*dy/dx)
         #fig.set_size_inches(9,9)
-        plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth, pres=None,plot_mesh=True)
+        plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth, pres=None,plot_mesh=base_info.plot_mesh)
         #sys.exit()
         plot_track(ax,track,date=None, color= 'r')
 
@@ -628,7 +628,7 @@ if base_info.plot_adc_maxele:
         out_dir1  = out_dir + '/' + region + '_maxelev_' 
         os.system('mkdir -p '+ out_dir1)
 
-        ax.set_title(base_info.name+' '+base_info.cases[base_info.key1]['label']+' - ' +\
+        ax.set_title(base_info.storm_name + ' ' +base_info.storm_year+' '+base_info.cases[base_info.key1]['label']+' - ' +\
                      base_info.cases[base_info.key0]['label'])#+'\n  '+defs[varname]['label']   \
                      #+'\n '+' Max. Val. =  %.2g' %val.max() + '[m]'  )
         
@@ -729,7 +729,7 @@ if base_info.plot_nems_fields:
                     plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth)
                     plot_track(ax,track,date=date)
                     
-                    title1 = base_info.name + \
+                    title1 = base_info.storm_year + \
                              '\n'+varname +' Date: ' + date.isoformat() +'\n Max. Val. =  %.2g' %val.max()
                              #base_info.cases[base_info.key1]['label']+',  '+defs[varname]['label'] +\
 
@@ -818,9 +818,9 @@ if base_info.plot_forcing_files:
                     
                     fig.set_size_inches(9,9*1.4*dy/dx)
                     
-                    plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth,plot_mesh=False)
+                    plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth,plot_mesh=base_info.plot_mesh)
                     plot_track(ax,track,date=date,color = 'r')
-                    ax.set_title(base_info.name +'  '+ base_info.cases[base_info.key1]['label']+\
+                    ax.set_title(base_info.storm_name + ' ' +base_info.storm_year +'  '+ base_info.cases[base_info.key1]['label']+\
                         '\n'+varname +' Date: ' + date.isoformat() +'\n Max. Val. =  %4.4g' %val.max() )
                     date_str = date.isoformat().replace(':','-')
 

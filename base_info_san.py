@@ -30,6 +30,8 @@ plot_adc_maxele     = False
 plot_nems_fields    = False
 plot_forcing_files  = False
 plot_nwm_files      = False
+plot_mesh           = False
+
 local_bias_cor      = True
 #HWM proximity limit
 prox_max = 0.004
