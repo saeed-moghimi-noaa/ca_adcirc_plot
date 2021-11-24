@@ -17,8 +17,8 @@ __email__ = "moghimis@gmail.com"
 #import matplotlib as mpl
 #mpl.use('Agg')
 import os,sys
-sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
-sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
+#sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
+#sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
 
 
 import matplotlib
@@ -33,14 +33,13 @@ import matplotlib.pyplot as plt
 
 import datetime
 #from   collections import defaultdict
-from   vars_param import *
-import adcirc_post as adcp
-from   pynmd.plotting    import plot_routines as pr
+from   pynmd.plotting.vars_param import defs
+from   pynmd.models.adcirc.post import adcirc_post as adcp
+from   pynmd.plotting import plot_routines as pr
+from   pynmd.plotting import plot_settings as ps
 from   pynmd.tools.gtime import roundTime
 from   pynmd.tools.gtime import find_nearest_time
-import plot_settings as ps
-from vars_param import defs 
-import colormaps as cmaps
+from   pynmd.plotting import colormaps as cmaps
 import pandas as pd
 
 import glob
@@ -48,7 +47,7 @@ from dateutil import parser
 
 #sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
 #import adcirc
-from atcf import readTrack
+from csdlpy.atcf import readTrack
 
 try:
     os.system('rm base_info.pyc'  )

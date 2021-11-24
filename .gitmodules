@@ -1,0 +1,6 @@
+[submodule "pynmd"]
+	path = pynmd
+	url = https://github.com/moghimis/pynmd.git
+[submodule "csdlpy"]
+	path = csdlpy
+	url = https://github.com/grapesh/csdlpy.git

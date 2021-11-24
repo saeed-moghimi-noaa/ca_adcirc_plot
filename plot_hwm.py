@@ -34,7 +34,7 @@ import time
 from scipy import stats
 from geo_regions import get_region_extent
 #import cPickle as pickle
-import adcirc_post as adcp 
+from pynmd.models.adcirc.post import adcirc_post as adcp
 from   pynmd.tools.compute_statistics import find_nearest1d,statatistics
 import matplotlib.pyplot as plt
 import numpy as np
