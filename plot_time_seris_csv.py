@@ -17,19 +17,23 @@ __version__ = "1.0"
 __email__ = "moghimis@gmail.com"
 
 
-from   pynmd.plotting.vars_param import *
-from   pynmd.plotting import plot_routines as pr
-import pynmd.models.adcirc.post as adcp 
-from   pynmd.tools.tide_analysis import tappy_filters
-from   pynmd.plotting import colormaps as cmaps
-import pynmd.plotting.plot_settings  as ps
+import os,sys
+sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
+sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
 
-import netCDF4 as n4
+
+
+import matplotlib
+if os.name == 'nt':
+    matplotlib.rc('font', family='Arial')
+else:  # might need tweaking, must support black triangle for N arrow
+    matplotlib.rc('font', family='DejaVu Sans')
+
+import netCDF4
 from   collections import defaultdict
-import cPickle as pickle
+# import cPickle as pickle
 import matplotlib.pyplot as plt
 import numpy as np
-import os, sys
 import datetime
 import string
 import glob
@@ -37,14 +41,18 @@ import time
 import pandas as pd
 import seaborn as sns
 import itertools
-
+import cftime
 
 sns.set_style(style='dark')
 #sns.set_style(style='ticks')
 
-sys.path.append('/home/Saeed.Moghimi/opt/pycodes/csdlpy')
-
-
+from   pynmd.plotting.vars_param import *
+from   pynmd.plotting import plot_routines as pr
+import pynmd.models.adcirc.post as adcp 
+from   pynmd.tools.tide_analysis import tappy_filters
+from   pynmd.plotting import colormaps as cmaps
+import pynmd.plotting.plot_settings  as ps
+import matplotlib.tri as Tri
 from geo_regions import get_region_extent
 
 try:
@@ -64,14 +72,14 @@ plot_rtofs      = False
 sub_tidal       = False
 pandas_plots_time_series = True
 
-print '\n\n ##################################################################'
-print '   >>>>>>>>>>>>>>>>>   Plot timeseries                    ',plot_timeseries
-print '   >>>>>>>>>>>>>>>>>   PANDAS_plots                       ',pandas_plots
-print '   >>>>>>>>>>>>>>>>>   Plot  RTOFS                        ',plot_rtofs
-print '   >>>>>>>>>>>>>>>>>   Plot  Sub-tidal                    ',sub_tidal
-print '   >>>>>>>>>>>>>>>>>   Pre-selected stations to plot      ',base_info.station_selected_list
-print '   >>>>>>>>>>>>>>>>>   pandas_plots_time_series           ',pandas_plots_time_series
-print ' ##################################################################\n\n\n\n\n'
+print ('\n\n ##################################################################')
+print ('   >>>>>>>>>>>>>>>>>   Plot timeseries                    ',plot_timeseries)
+print ('   >>>>>>>>>>>>>>>>>   PANDAS_plots                       ',pandas_plots)
+print ('   >>>>>>>>>>>>>>>>>   Plot  RTOFS                        ',plot_rtofs)
+print ('   >>>>>>>>>>>>>>>>>   Plot  Sub-tidal                    ',sub_tidal)
+print ('   >>>>>>>>>>>>>>>>>   Pre-selected stations to plot      ',base_info.station_selected_list)
+print ('   >>>>>>>>>>>>>>>>>   pandas_plots_time_series           ',pandas_plots_time_series)
+print (' ##################################################################\n\n\n\n\n')
 
 # calculate statistics
 elev_lim = 2.2  # m
@@ -132,13 +140,13 @@ def get_station_ssh(fort61,lim):
     """
         Read model ssh
     """
-    nc0      = n4.Dataset(fort61)
+    nc0      = netCDF4.Dataset(fort61)
     ncv0     = nc0.variables 
     sta_lon  = ncv0['x'][:]
     sta_lat  = ncv0['y'][:]
     sta_nam  = ncv0['station_name'][:].squeeze()
     sta_zeta = ncv0['zeta']        [:].squeeze()
-    sta_date = n4.num2date(ncv0['time'][:], ncv0['time'].units)
+    sta_date = netCDF4.num2date(ncv0['time'][:], ncv0['time'].units)
 
     stationIDs = []
     mod    = []
@@ -238,9 +246,9 @@ def get_rtofs_elev(stationID):
     """
     fort61 = '/scratch4/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/data/ARTOFS-ike/rtofs_fort61.nc'
     fort61_sta_ids = get_station_ids(fort61)
-    nc = n4.Dataset(fort61)
+    nc = netCDF4.Dataset(fort61)
     ncv = nc.variables 
-    dates = n4.num2date(ncv['time_rtofs'][:], ncv['time_rtofs'].units)
+    dates = netCDF4.num2date(ncv['time_rtofs'][:], ncv['time_rtofs'].units)
     ind2 = return_index (stationID, fort61_sta_ids)
     elev = ncv['zeta_rtofs'][:, ind2]
     nc.close()
@@ -249,7 +257,11 @@ def get_rtofs_elev(stationID):
 def datetime64todatetime(dt):
     tmp = []
     for it in range(len(dt)):
-        tmp.append(pd.Timestamp(dt[it]).to_pydatetime())
+        d = dt[it]
+        if isinstance(d, cftime.DatetimeGregorian):
+            tmp.append(datetime.datetime(d.year, d.month, d.day, d.hour, d.minute, d.second))
+        else:
+            tmp.append(pd.Timestamp(dt[it]).to_pydatetime())
     return np.array(tmp)
 
 def do_tappy_tide_analysis(dates, elev):
@@ -355,8 +367,8 @@ def do_tappy_tide_analysis(dates, val):
     
     units = "seconds since 1970-01-01 00:00:00 UTC"
     yd_time = x.dates 
-    yd_sec = n4.date2num(yd_time        , units)
-    ft_sec = n4.date2num(x_dates_filter , units)
+    yd_sec = netCDF4.date2num(yd_time        , units)
+    ft_sec = netCDF4.date2num(x_dates_filter , units)
     ft_lev_new = np.interp(yd_sec, ft_sec, x_eleva_filter)
     elev_filter = ft_lev_new
     
@@ -376,7 +388,6 @@ def plot_track(ax,track,date=None,color = 'r'):
         ax.plot(track['lon'][ind],track['lat'][ind],'ro',alpha=1,ms=8)
     
     ax.plot(track['lon'],track['lat'],lw=3,color=color,ls='dashed',alpha=1)
-
 
 def read_track(fname=None):
     if fname is None:
@@ -403,16 +414,21 @@ def read_track(fname=None):
     return dict(dates=dates,lon=trc.lon.values, lat=trc.lat.values)
 
 def plot_map(sta_tab=[],comm_tab=[],prefix='',iplot=0):
-        print 'Plot map for recording points ...'
+        print ('Plot map for recording points ...')
         #construct HSOFS Tri mask
         fname  = base_info.cases[base_info.key1]['dir'] + '/fort.63.nc'
-        nc0    = n4.Dataset(fname)
+        nc0    = netCDF4.Dataset(fname)
         ncv0   = nc0.variables
         depth  = ncv0['depth'][:]
-        depth [depth < -10] = -10
+        depth [depth.mask]  = -10.0
+        lon0   = ncv0['x'][:]
+        lat0   = ncv0['y'][:]
+        elems  = ncv0['element'][:,:]-1  # Move to 0-indexing by subtracting 1
+        tri = Tri.Triangulation(lon0,lat0, triangles=elems)
+
         nc0.close()
         
-        fig, ax = adcp.make_map()
+        fig, ax = adcp.make_map(res = None)
         fig.set_size_inches(7,7)
         lim = get_region_extent(region = base_info.regions[0])
 
@@ -425,8 +441,8 @@ def plot_map(sta_tab=[],comm_tab=[],prefix='',iplot=0):
         except:
             pass        
         
-        cond1 = ax.tricontour(tri,depth+0.1 ,levels=[0.0]  ,colors='k',lw=0.25, alpha= 0.75)
-        
+        cond1 = ax.tricontour(tri,depth+0.1   ,levels=[0.0]  ,colors='k',lw=0.02, alpha=0.8)
+
         #plot mesh
         if False:
             ax.triplot(tri, 'w-', lw=0.1, alpha=0.4)
@@ -454,7 +470,7 @@ def plot_map(sta_tab=[],comm_tab=[],prefix='',iplot=0):
 print (' read from OBS CSV files')
 #try:
 print ('   >  ssh from CSV files')
-ssh_table,ssh = read_csv (base_info.base_dir_obs, base_info.storm_name, base_info.storm_year, label='coops_ssh' )
+ssh_table,ssh = read_csv (base_info.base_dir_obs, base_info.name, base_info.year, label='coops_ssh' )
 
 """
 except:
@@ -499,7 +515,7 @@ args = sys.argv
 scr_name = args[0]
 os.system('cp -fr  ' + scr_name + '    ' + scr_dir)
 os.system('cp -fr        *.py     '      + scr_dir)
-print out_dir
+print (out_dir)
 
 #####################################################################
 # graphic settings
@@ -555,8 +571,8 @@ else:
     #stationIDs = np.array(ssh_table.station_code)
     ##############3
     #This is just to generate the common list of stations
-    fort61 = base_info.cases[base_info.cases.keys()[0]]['dir'] + '/fort.61.nc'
-    mod , mod_table = get_station_ssh(fort61,defs['lim'] )
+    fort61 = base_info.cases[np.sort(list(base_info.cases.keys()))[0]]['dir'] + '/fort.61.nc'
+    mod , mod_table = get_station_ssh(fort61=fort61,lim=defs['lim'] )
     tmp_ssh_table = ssh_table.sort_values('lat')
     common  = set(mod_table['station_code']).intersection(tmp_ssh_table  ['station_code'].values)
     stationIDs  = np.sort(list(common))
@@ -578,12 +594,12 @@ if plot_timeseries:
     iloc = 0
     for iplot in range(nplot):
         if len(sta_list_all) < (irow_max * icol):
-            print ' ... All list'
+            print (' ... All list')
             sta_list = sta_list_all
             # match the numebr to clumns
             sta_list = sta_list[:n]
         else:
-            print ' ... partial list'
+            print (' ... partial list')
 
             sta_list = sta_list_all[iloc:iloc+icol*irow_max]         
             iloc     = iloc + icol * irow_max
@@ -617,10 +633,10 @@ if plot_timeseries:
                 cl = itertools.cycle(sns.color_palette(palette='dark', n_colors=2 * len(base_info.cases.keys())))
                 # cl = itertools.cycle(sns.color_palette(palette = 'mute', n_colors = 2 * len(base_info.cases.keys()) ) )
                 
-                keys = np.sort(base_info.cases.keys())
+                keys = np.sort(list(base_info.cases.keys()))
                 for key in keys:
                         # try:
-                        print key
+                        print (key)
                         fort61 = base_info.cases[key]['dir'] + '/fort.61.nc'
                         mod , mod_table = get_station_ssh(fort61,defs['lim'])
      
@@ -648,7 +664,7 @@ if plot_timeseries:
 
                         stationID = sta#stationIDs[ista]
                         #sta_list.append(stationID)
-                        print stationID
+                        print (stationID)
                         indo = return_index (stationID, ssh_table['station_code'].values)
                         indm = return_index (stationID, mod_table['station_code'].values)
                         header = 'Station: ' + stationID + ' at ' + ssh_table.index[indo]
@@ -656,8 +672,8 @@ if plot_timeseries:
                     
                         print (header)
      
-                        defs['elev']['vmin'] = 1.2 * max(ssh[indo].max().values,mod[indm].max().values )
-                        defs['elev']['vmax'] = 1.1 * min(ssh[indo].min().values,mod[indm].min().values )
+                        defs['elev']['vmin'] = 1.2 * max(ssh[indo].max().values,mod[indm].max().values ).astype(float)
+                        defs['elev']['vmax'] = 1.1 * min(ssh[indo].min().values,mod[indm].min().values ).astype(float)
                         
                         
                         # model
@@ -688,7 +704,7 @@ if plot_timeseries:
                                     )
                         #
                         if sub_tidal:
-                            print 'sub_tidal'
+                            print ('sub_tidal')
                             dates1, val1 = do_tappy_tide_analysis(dates, val)
                             data['xx'] = dates1
                             data['val'] = val1
@@ -699,7 +715,7 @@ if plot_timeseries:
                         # ax.plot(dates,val)
                         ic += 1
                         # except:
-                        # print '        >      unsucessful key >' , key
+                        # print ('        >      unsucessful key >' , key)
                         # #sys.exit()
                         # pass  
                   
@@ -800,10 +816,10 @@ if False:
     ###########################################################################################
     ###########################################################################################
     def model_on_data(data_dates, model_dates, model_val):
-        print '  >>>>>>>>>>>>>>>   '
+        print ('  >>>>>>>>>>>>>>>   ')
         units     = 'seconds since 2012-04-01 00:00:00'
-        data_sec  = n4.date2num(data_dates , units)
-        model_sec = n4.date2num(model_dates, units)
+        data_sec  = netCDF4.date2num(data_dates , units)
+        model_sec = netCDF4.date2num(model_dates, units)
         return np.interp(data_sec, model_sec, model_val)
         
     # read and construct timeseries
@@ -811,30 +827,30 @@ if False:
     nn = 0
     for ista in range(len(sta_list_all)):
         stationID = sta_list_all[ista]
-        print stationID
+        print (stationID)
         ind1 = return_index (stationID, fpiks)
         if ind1 is not None:
             sta_pik = fpiks   [ind1]
         else:
-            print ' Remove this station from the list: no data is avaiable for the time of storm > ' , stationID
+            print (' Remove this station from the list: no data is avaiable for the time of storm > ' , stationID)
             sys.exit(' ERROR !')
         f2 = file(sta_pik , 'r')
         stations = pickle.load(f2)    
         f2.close()  
         
         header = 'Station: ' + stationID + ' at ' + stations['info']['name'] + ', ' + stations['info']['state']
-        print   stations['info']['name'], stations['info']['lon'], stations['info']['lat'], ' ! ', stationID
+        print   (stations['info']['name'], stations['info']['lon'], stations['info']['lat'], ' ! ', stationID)
         
         
         for param in params:
             keys = np.sort(base_info.cases.keys())
             for key in keys:
-                print key
+                print (key)
                 fort61 = base_info.cases[key]['dir'] + '/fort.61.nc'
                 fort61_sta_ids = get_station_ids(fort61)
-                nc = n4.Dataset(fort61)
+                nc = netCDF4.Dataset(fort61)
                 ncv = nc.variables 
-                dates = n4.num2date(ncv['time'][:], ncv['time'].units)
+                dates = netCDF4.num2date(ncv['time'][:], ncv['time'].units)
                 ind2 = return_index (stationID, fort61_sta_ids)
                 val = ncv[defs['elev']['var']][:, ind2]
                 nc.close()
@@ -852,7 +868,7 @@ if False:
                 all_stations[stationID] = stations
     
                
-    print '   >>>  Map for Taylor diagram'
+    print ('   >>>  Map for Taylor diagram')
     plot_map(sta_list_all=all_stations.keys(),sta_list=[],prefix='for_taylor',iplot=0)
     
     
@@ -900,7 +916,7 @@ if False:
     
     if plot_taylor:
         #####
-        print 'Plot Taylor Dig.'
+        print ('Plot Taylor Dig.')
         from pynmd.plotting import taylor
         markersize = 8
         fig = plt.figure(6, figsize=(9, 9))
@@ -949,7 +965,7 @@ if False:
         plt.close('all')
     
     
-        print 'plot stats on fig ..'
+        print ('plot stats on fig ..')
         params = ['cor', 'r2', 'rmse', 'rbias', 'bias', 'mae', 'peak', 'ia', 'skill']
         params = ['cor', 'rmse', 'rbias', 'bias', 'peak', 'ia']
         nall = len(params)
@@ -983,7 +999,7 @@ if False:
             labs = []
             keys = np.sort(base_info.cases.keys())
             for key in keys:
-                print key
+                print (key)
                 
                 marker = ps.marker[imodel]
                 l = ax.plot(imodel, np.abs(base_info.cases[key]['stats'][param]), marker=marker, ls='', c=ps.colors[imodel],
@@ -1127,7 +1143,7 @@ if False:
            del all_extrems_final 
     
         for st_key in all_stations.keys():
-            print st_key
+            print (st_key)
             stations = all_stations[st_key]
             obs = pd.DataFrame(stations['cwlev']['values'], columns=['data'])
             se = pd.Series(stations['cwlev']['dates'])
@@ -1285,7 +1301,7 @@ def return_matched_items(list1,list2):
 def get_station_ids(fort61):
     # fort61 = '/scratch4/COASTAL/coastal/noscrub/Yuji.Funakoshi/coastal_act/2008_ike/hindcast//tide//fort.61.nc'
     fort61_sta_ids = []
-    nc2 = n4.Dataset(fort61)
+    nc2 = netCDF4.Dataset(fort61)
     ncv2 = nc2.variables 
     sta_nams = ncv2['station_name'][:]
     for sta in sta_nams:

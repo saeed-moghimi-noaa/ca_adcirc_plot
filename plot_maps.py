@@ -3,6 +3,8 @@ from __future__ import division
 # -*- coding: utf-8 -*-
 """
 plot multi axes ####
+Dec 2021: adapter for Py3.x
+
 """
 __author__ = "Saeed Moghimi"
 __copyright__ = "Copyright 2017, UCAR/NOAA"
@@ -12,29 +14,40 @@ __email__ = "moghimis@gmail.com"
 
 #Wed 24 May 2017 03:12:39 PM UTC 
 
-import matplotlib as mpl
-mpl.use('Agg')
+#import matplotlib as mpl
+#mpl.use('Agg')
+import os,sys
+sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
+sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
+
+
+import matplotlib
+if os.name == 'nt':
+    matplotlib.rc('font', family='Arial')
+else:  # might need tweaking, must support black triangle for N arrow
+    matplotlib.rc('font', family='DejaVu Sans')
 
 import netCDF4
 import numpy as np
 import matplotlib.pyplot as plt
+
 import datetime
 #from   collections import defaultdict
-from   pynmd.plotting.vars_param import *
-import pynmd.models.adcirc.post as adcp
-import pynmd.plotting.plot_settings as ps
-from pynmd.plotting.vars_param import defs 
-import pynmd.plotting.colormaps as cmaps
-#from pynmd.tools.gtime import roundTime
-
+from   vars_param import *
+import adcirc_post as adcp
+from   pynmd.plotting    import plot_routines as pr
+from   pynmd.tools.gtime import roundTime
+from   pynmd.tools.gtime import find_nearest_time
+import plot_settings as ps
+from vars_param import defs 
+import colormaps as cmaps
 import pandas as pd
-import os,sys
 
 import glob
 from dateutil import parser
 
-sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
-import adcirc
+#sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
+#import adcirc
 from atcf import readTrack
 
 try:
@@ -65,6 +78,10 @@ from cartopy.mpl.gridliner import (LONGITUDE_FORMATTER,
                                    LATITUDE_FORMATTER)
 
 
+
+
+
+
 #====== subplot adjustments ===============
 left1  = 0.1    # the left side of the subplots of the figure
 right1 = 0.8   # the right side of the subplots of the figure
@@ -80,23 +97,6 @@ try:
 except:
    ftypes = ['png','pdf']
    ftypes = ['png']    
-
-
-def roundTime(dt=None, dateDelta=datetime.timedelta(minutes=1)):
-    """Round a datetime object to a multiple of a timedelta
-    dt : datetime.datetime object, default now.
-    dateDelta : timedelta object, we round to a multiple of this, default 1 minute.
-    Author: Thierry Husson 2012 - Use it as you want but don't blame me.
-            Stijn Nevens 2014 - Changed to use only datetime objects as variables
-    """
-    roundTo = dateDelta.total_seconds()
-
-    if dt == None : dt = datetime.datetime.now()
-    seconds = (dt - dt.min).seconds
-    # // is a floor division, not a comment on following line:
-    rounding = (seconds+roundTo/2) // roundTo * roundTo
-    return dt + datetime.timedelta(0,rounding-seconds,-dt.microsecond)
-
 
 def plot_map_old(ax,tri,val,extent,vmin=None,vmax=None,dep=None,cmap=None):
 
@@ -157,20 +157,12 @@ def plot_map_old(ax,tri,val,extent,vmin=None,vmax=None,dep=None,cmap=None):
         t = ax.text(xtext, ytext , r'0.25 [m] '              , color = 'g',fontsize=7)
         t.set_bbox(dict(facecolor='w', alpha=0.75, edgecolor='w'))
 
-import cartopy.crs as ccrs
-from math import floor
-import matplotlib.pyplot as plt
-from matplotlib import patheffects
-import matplotlib
-if os.name == 'nt':
-    matplotlib.rc('font', family='Arial')
-else:  # might need tweaking, must support black triangle for N arrow
-    matplotlib.rc('font', family='DejaVu Sans')
 
 
 
 
-def plot_map(ax,tri,val,var=None,lim=None,dep=None, pres=None,no_axes_label=True,plot_mesh=True, scale_bar = True, u=None,v=None):
+
+def plot_map(ax=None,tri=None,val=None,var=None,lim=None,dep=None, pres=None,no_axes_label=True,plot_mesh=True, scale_bar = True, u=None,v=None):
 
     if lim is not None:
         extent = [lim['xmin'],lim['xmax'],lim['ymin'],lim['ymax']]        
@@ -208,19 +200,13 @@ def plot_map(ax,tri,val,var=None,lim=None,dep=None, pres=None,no_axes_label=True
     cb_size = 0.3
     cbax    = fig.add_axes([xsub1+ cb_dx * (xsub2-xsub1), ysub1 + cb_dy * (ysub2-ysub1), 0.01, cb_size]) 
     
-    if var is not None:
-        #print ' tricontourf '
-        vmin = var['vmin']
-        vmax = var['vmax']
-        dv = (vmax-vmin)/50.0
-        levels=np.arange(vmin,vmax+dv,dv)
-        #val [val < vmin] = vmin+1e-3
-        cf1 = ax.tricontourf(tri,val,levels=levels, cmap = cmap , extend='both')#extend='max' )  #,extend='both'
-        cb  = plt.colorbar(cf1,cax=cbax,ticks = [vmin,(vmin+vmax)/2,vmax],format='%1.4g',orientation='vertical')      
-    else:
-        cf1 = ax.tricontourf(tri,val , cmap = cmap)
-        cb  = plt.colorbar(cf1,cax=cbax,format='%1.4g',orientation='vertical')      
-    
+    vmin = var['vmin']
+    vmax = var['vmax']
+    step = 0.5  #m
+    levels = np.arange(vmin, vmax+step, step=step)
+    #contour = ax.tricontourf(tri, zeta0,levels=levels,cmap = my_cmap ,extend='max')
+    cf1 = ax.tricontourf(tri,zeta0,levels=levels, cmap = cmap , extend='both')#extend='max' )  #,extend='both'  
+    cb  = plt.colorbar(cf1,cax=cbax,ticks = [vmin,(vmin+vmax)/2,vmax],format='%1.4g',orientation='vertical')      
     cb.set_label(var['label'])
 
     if base_info.vec:
@@ -249,7 +235,7 @@ def plot_map(ax,tri,val,var=None,lim=None,dep=None, pres=None,no_axes_label=True
             ind_max = np.array(np.where((val == val.max()))).squeeze().item()
             #ax.plot(tri.x[ind_max],tri.y[ind_max],'m*',ms=14)
         else:
-            print 'val is zero !!!'
+            print ('val is zero !!!')
     except:
         pass
          
@@ -285,7 +271,7 @@ def plot_map(ax,tri,val,var=None,lim=None,dep=None, pres=None,no_axes_label=True
     plt.setp( ax.xaxis.get_majorticklabels(), rotation=30 )
 
     if scale_bar:
-        adcp.plot_scale_bar(ax, ax.projection, 10) 
+        pr.scale_bar(ax, ax.projection, 10) 
 
     if no_axes_label:
         plt.setp( ax, 'xticklabels', [] )
@@ -299,18 +285,7 @@ def datetime64todatetime(dt):
         tmp.append(pd.Timestamp(dt[it]).to_pydatetime())
     return np.array(tmp)
 
-def find_nearest_time(dates,date):
-    """
-    Return nearest time indexs
-    Inp: dates: timedate vector
-         date: timedate pint
-    Out: index
-    
-    """
-    dtsec = []
-    for tmp in dates:
-        dtsec.append( np.abs( (tmp-date).total_seconds()  ) )  
-    return np.argmin(dtsec)    
+
 
 def plot_track(ax,track,date=None,color = 'r'):
     """
@@ -406,7 +381,7 @@ if False:
             gus_track = read_track(fname=gustav_fname)
     
     if base_info.storm_year == 'ISA':
-        print ' gfgfdgfg' 
+        print (' oopppss ..') 
 
     isabel_fname = '/scratch4/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/01_data/tracks/isabel_aal132003.dat'
     track = read_track(fname=isabel_fname)
@@ -440,7 +415,7 @@ nc1.close()
 #construct HSOFS Tri mask
 lon,lat,tri  = adcp.ReadTri(base_info.cases[base_info.key0]['dir'])
 #                    
-print base_info.cases[base_info.key1]['dir']
+print (base_info.cases[base_info.key1]['dir'])
 #
 track = read_track(fname=base_info.track_fname)
 
@@ -460,13 +435,13 @@ if base_info.plot_nwm_files:
 if base_info.plot_adc_fort:
     for varname in base_info.varnames:   
         for ind1 in indd1[::-1][:]:
-            print '-------------------------------------------'
+            print ('-------------------------------------------')
             for region in base_info.regions:
                 lim = get_region_extent(region = region)
                 date  = dates1[ind1]
                 # find matching index for new netcdf file 
 
-                print ind1, region ,varname, date
+                print (ind1, region ,varname, date)
                 
                 try:
                     pres =  get_val('pmsl',ind1)
@@ -517,7 +492,7 @@ if base_info.plot_adc_fort:
                 #    defs['maxelev'][]
                 
                 val[np.isnan(val)] = 0.0
-                fig, ax = adcp.make_map()
+                fig, ax = pr.make_map()
                 #fig = plt.figure()
                 dx = abs(lim['xmin'] - lim['xmax'])
                 dy = abs(lim['ymin'] - lim['ymax'])
@@ -551,7 +526,7 @@ if base_info.plot_adc_fort:
                 #    base_info.cases[base_info.key0]['label']+'\n  '+defs[varname]['label'] +\
                 #    ' Date: ' + date.isoformat() +'\n Max. Val. =  %.2g' %val.max() + '[m]')
                 
-                ax.set_title(base_info.storm_name + ' ' +base_info.storm_year+' '+title1+'\n'+ ' Date: ' + date.isoformat() +'\n'+' Max. Val. =  %.2g' %val_max)
+                ax.set_title(base_info.name + ' ' +base_info.year+' '+title1+'\n'+ ' Date: ' + date.isoformat() +'\n'+' Max. Val. =  %.2g' %val_max)
                 
                 
                 date_str = date.isoformat().replace(':','-')
@@ -575,15 +550,22 @@ if base_info.plot_adc_fort:
 if base_info.plot_adc_maxele:
     varname = 'elev'
     for region in base_info.regions:
-        print 'Maxele diff ', region 
+        print ('Maxele diff ', region) 
     
         lim = get_region_extent(region = region)
-        print lim 
+        print (lim) 
         fname  =  base_info.cases[base_info.key0]['dir'] + '/maxele.63.nc'
         nc0    = netCDF4.Dataset(fname)
         ncv0   = nc0.variables
         zeta0  = ncv0['zeta_max'][:]
         dep0   = ncv0['depth'][:]
+        lon0   = ncv0['x'][:]
+        lat0   = ncv0['y'][:]
+        elems  = ncv0['element'][:,:]-1  # Move to 0-indexing by subtracting 1
+        zeta0[zeta0.mask] = 0.0
+        #tri = Tri.Triangulation(lon0,lat0, triangles=elems)
+        
+        
         date = None
         ##
         fname  =  base_info.cases[base_info.key1]['dir'] + '/maxele.63.nc'
@@ -592,19 +574,49 @@ if base_info.plot_adc_maxele:
         zeta1  = ncv1['zeta_max'][:]
         
         mask = zeta1 < 0
-        
-        #tri.set_mask = maskDryElementsTri(tri,mask)
+
+
        
         val = zeta1 - zeta0
-        #val = np.ma.masked_where(val<0,val)
-        
+        val = np.ma.masked_where(val<0,val)
+        val[val==mask] = 0.0
         val[np.isnan(val)] = 0.0
-        fig, ax = adcp.make_map()
         
+        fig, ax = pr.make_map()
+
+        if False:    
+            vmin    = base_info.defs['elev']['vmin']
+            vmax    = base_info.defs['elev']['vmax'] 
+            step = 0.5  #m
+            levels = np.arange(vmin, vmax+step, step=step)
+            #contour = ax.tricontourf(tri, zeta0,levels=levels,cmap = my_cmap ,extend='max')
+            cf1 = ax.tricontourf(tri,zeta0,levels=levels, cmap = my_cmap , extend='both')#extend='max' )  #,extend='both'
+            
+            # set scale for vertical vector plots
+            pos_ax   = np.array (ax.get_position ())
+            aheight  = pos_ax[1][1] -pos_ax[0][1]
+            awidth   = pos_ax[1][0] -pos_ax[0][0]
+
+            fwidth   = 1
+            fheight  = 1
+            wscale  = aheight*fheight/(awidth*fwidth) * (lim['xmax']-lim['xmin'])/(lim['ymax']-lim['ymin'])
+            #
+            xsub1 = pos_ax[0][0]
+            xsub2 = pos_ax[1][0]
+            ysub1 = pos_ax[0][1]            
+            ysub2 = pos_ax[1][1]
+
+            cb_dx = 0.9
+            cb_dy = 0.3
+            cb_size = 0.3
+            cbax    = fig.add_axes([xsub1+ cb_dx * (xsub2-xsub1), ysub1 + cb_dy * (ysub2-ysub1), 0.01, cb_size]) 
+            cb  = plt.colorbar(cf1,cax=cbax,ticks = [vmin,(vmin+vmax)/2,vmax],format='%1.4g',orientation='vertical')    
+
         dx = abs(lim['xmin'] - lim['xmax'])
         dy = abs(lim['ymin'] - lim['ymax'])
         
         fig.set_size_inches(9,9*1.4*dy/dx)
+
         #fig.set_size_inches(9,9)
         plot_map (ax=ax,tri=tri,val=val,var=defs[varname],lim=lim,dep=depth, pres=None,plot_mesh=base_info.plot_mesh)
         #sys.exit()
@@ -628,7 +640,7 @@ if base_info.plot_adc_maxele:
         out_dir1  = out_dir + '/' + region + '_maxelev_' 
         os.system('mkdir -p '+ out_dir1)
 
-        ax.set_title(base_info.storm_name + ' ' +base_info.storm_year+' '+base_info.cases[base_info.key1]['label']+' - ' +\
+        ax.set_title(base_info.name + ' ' +base_info.year+' '+base_info.cases[base_info.key1]['label']+' - ' +\
                      base_info.cases[base_info.key0]['label'])#+'\n  '+defs[varname]['label']   \
                      #+'\n '+' Max. Val. =  %.2g' %val.max() + '[m]'  )
         
@@ -700,9 +712,9 @@ if base_info.plot_nems_fields:
                 lim = get_region_extent(region = region)
                 fname = plist[ind1]
                 date = parser.parse(fname[-22:-3])
-                print date
+                print (date)
                 if ((date> base_info.tim_lim['xmin'] ) &(date<base_info.tim_lim['xmax'])):
-                    print region, fname 
+                    print (region, fname) 
                     #
                     nc   = netCDF4.Dataset(fname) 
                     val  = nc.variables[varname][:]
@@ -760,7 +772,7 @@ if base_info.plot_forcing_files:
     #varname = 'hs'
     for varname in base_info.varnames:
         if varname in ['pmsl','wind']:
-            print 'Plot HWRF input file ..'
+            print ('Plot HWRF input file ..')
             file_piece = '/inp_atmesh/*.nc'
             plist = np.sort(glob.glob( base_info.cases[base_info.key1]['dir']  + file_piece))
             fname = plist[0]
@@ -772,7 +784,7 @@ if base_info.plot_forcing_files:
             dates  = netCDF4.num2date(nchv['time'][:],nchv['time'].units) 
         
         if varname == 'hs':
-            print 'Plot Hs WW3 Res file ..'              
+            print ('Plot Hs WW3 Res file ..'  )            
             fname = base_info.cases[base_info.key1]['hsig_file']
             nch    = netCDF4.Dataset(fname) 
             nchv   = nch.variables
@@ -785,9 +797,9 @@ if base_info.plot_forcing_files:
                 lim = get_region_extent(region = region)
                 date = dates[ind1]
                 date = roundTime(dt=date, dateDelta=datetime.timedelta(minutes=1))
-                print date
+                print (date)
                 if ((date> base_info.tim_lim['xmin'] ) &(date<base_info.tim_lim['xmax'])):
-                    print region, fname 
+                    print (region, fname) 
                     #
                     #
                     ### NOUPC pressure
@@ -846,7 +858,7 @@ if base_info.plot_forcing_files:
         for ind1 in indd[::-1]:
             date =dates[ind1] 
             date_str = date.isoformat()
-            print date_str
+            print (date_str)
             fig, ax = adcp.make_map()
             fig.set_size_inches(7,7)
             extent = [lim['xmin'],lim['xmax'],lim['ymin'],lim['ymax']]        
@@ -1268,7 +1280,7 @@ if plot_snow:
 
 """
 
-print '[info]: Fin '
+print ('[info]: Fin ')
 
 
 

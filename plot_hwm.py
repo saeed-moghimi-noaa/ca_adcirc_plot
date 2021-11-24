@@ -21,18 +21,23 @@ __email__ = "moghimis@gmail.com"
 
 #import netCDF4 as n4
 #from   collections import defaultdict
-from   pynmd.plotting.vars_param import *
+import os,sys
+
+sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
+sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
+
+
+from   vars_param import *
 from   pynmd.plotting import plot_routines as pr
 from   pynmd.plotting import plot_settings as ps
 import time
 from scipy import stats
 from geo_regions import get_region_extent
 #import cPickle as pickle
-import pynmd.models.adcirc.post as adcp 
-from pynmd.tools.compute_statistics import find_nearest1d,statatistics
+import adcirc_post as adcp 
+from   pynmd.tools.compute_statistics import find_nearest1d,statatistics
 import matplotlib.pyplot as plt
 import numpy as np
-import os,sys
 import datetime
 import string
 import glob
@@ -41,11 +46,11 @@ import string
 import pandas as pd
 import netCDF4 as n4
 import seaborn as sns
-import pynmd.plotting.colormaps as cmaps
+import colormaps as cmaps
 
 
-sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
-import adcirc
+#sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
+#import adcirc
 
 
 #sns.set_style(style='dark')
@@ -76,7 +81,7 @@ ftype = '.png'
 #ftype = '.pdf'
 
 
-for x in base_info.cases[base_info.key0]['dir'].split('/'):
+for x in base_info.cases[base_info.key]['dir'].split('/'):
     if 'rt_' in x:  
         prefix = x
     else:
@@ -91,7 +96,7 @@ args=sys.argv
 scr_name = args[0]
 os.system('cp -fr  '+scr_name +'    '+scr_dir)
 os.system('cp -fr  *.py             '+scr_dir)
-print ' > Output folder: \n  >      ',out_dir
+print (' > Output folder: \n  >      ',out_dir)
 
 ####################
 
@@ -131,11 +136,11 @@ def find_hwm_v01(xgrd,ygrd,maxe,xhwm,yhwm,elev_hwm,convert2msl=None,bias_cor=Non
         #mask = [maxe < -900.0]
 
     else:
-        print 'Choose a valid flag > '
-        print 'flag = all :    find nearset grid point '
-        print '     = valid:   find nearset grid point with non-nan value'
-        print '     = pos:     find nearset grid point with positive value'
-        print '     = neg:     find nearset grid point with negative valueChoose a valid flag > '
+        print ('Choose a valid flag > ')
+        print ('flag = all :    find nearset grid point ')
+        print ('     = valid:   find nearset grid point with non-nan value')
+        print ('     = pos:     find nearset grid point with positive value')
+        print ('     = neg:     find nearset grid point with negative valueChoose a valid flag > ')
         sys.exit('ERROR') 
     
     mask  = np.array(mask).squeeze()
@@ -216,11 +221,11 @@ def find_hwm(tri,maxe,xhwm,yhwm,elev_hwm,bias_cor=None,flag='all'):
 #         #mask = [maxe < -900.0]
 # 
 #     else:
-#         print 'Choose a valid flag > '
-#         print 'flag = all :    find nearset grid point '
-#         print '     = valid:   find nearset grid point with non-nan value'
-#         print '     = pos:     find nearset grid point with positive value'
-#         print '     = neg:     find nearset grid point with negative valueChoose a valid flag > '
+#         print ('Choose a valid flag > '
+#         print ('flag = all :    find nearset grid point '
+#         print ('     = valid:   find nearset grid point with non-nan value'
+#         print ('     = pos:     find nearset grid point with positive value'
+#         print ('     = neg:     find nearset grid point with negative valueChoose a valid flag > '
 #         sys.exit('ERROR') 
 #     
 #     mask  = np.array(mask).squeeze()
@@ -309,7 +314,7 @@ def read_track(fname=None):
 
 
 
-print ('\n\n\n Storm:    ', base_info.storm_name,'\n\n\n')
+print ('\n\n\n Storm:    ', base_info.name,'\n\n\n')
 
 #for map plot
 lon,lat,tri  = adcp.ReadTri(base_info.cases[base_info.key1]['dir'])
@@ -327,9 +332,9 @@ model_data  = {}
 nn = 0
 
 
-keys = np.sort(base_info.cases.keys())
+keys = np.sort(list(base_info.cases.keys()))
 for key in keys:
-    print '  > ', key
+    print ('  > ', key)
     maxelevf  =  base_info.cases[key]['dir'] + '/maxele.63.nc'
     ncmaxelev = n4.Dataset(maxelevf,'r')
     elev_max  = ncmaxelev.variables['zeta_max'][:]
@@ -359,7 +364,7 @@ for key in keys:
 
 
 #sys.exit()
-key = base_info.cases.keys()[0]
+key = list(base_info.cases.keys())[0]
 dfa = pd.DataFrame(zip(base_info.cases[key]['data'],
                        base_info.cases[key]['xdata'],
                        base_info.cases[key]['ydata'],
@@ -371,7 +376,7 @@ dfa = pd.DataFrame(zip(base_info.cases[key]['data'],
 
 
 ####    APPLY RULES to Clean the DATA   ######
-for key in np.sort(base_info.cases.keys()):
+for key in np.sort(list(base_info.cases.keys())):
     model = base_info.cases[key]['model'] 
     prox  = base_info.cases[key]['prox'] 
     model[np.abs(model) > 20.0     ]           = np.nan
@@ -406,23 +411,23 @@ for key in dfa.columns:
         model_keys.append(key)
    
     if 'tide' in key:
-        print '>>  \n\n\n >> Possible ERROR due to including > only tide <  case in base_info.py \n\n\n'
+        print ('>>  \n\n\n >> Possible ERROR due to including > only tide <  case in base_info.py \n\n\n')
 
 #############
 if include_bias:
-    print '[info:] BIAS Correction included ..'
+    print ('[info:] BIAS Correction included ..')
     bias_all = 0.0
     for key in model_keys:
         bias_all = bias_all + (dfa[key].mean() - dfa['data'].mean())
     
     bias_all = bias_all / len(model_keys)
     
-    print 'bias_all=', bias_all
+    print ('bias_all=', bias_all)
     for key in model_keys:
         dfa[key] = dfa[key] - bias_all
 
 
-print '[info:] plot scatter'
+print ('[info:] plot scatter')
 nall = len(model_keys)
 icol = 2
 irow = nall // icol
@@ -450,7 +455,7 @@ axgrid = axgrid.reshape(icol*irow)
 
 nn = 0
 for key in model_keys:
-    print '  > ', key
+    print ('  > ', key)
     
     model = dfa[key]
     #nn = 0
@@ -466,7 +471,7 @@ for key in model_keys:
     pattern_rms_diff = np.sqrt((((data-data.mean()) - (model-model.mean()))**2).mean())
     #print pattern_rms_diff
     
-    print '   > N= ', len(model)
+    print ('   > N= ', len(model))
     
     #nn = 1
     #ax  = axgrid[nn]
@@ -483,7 +488,7 @@ plt.close('all')
 #
 ###################################################################
 
-print 'Plot map for HWM data ...'
+print ('Plot map for HWM data ...')
 track = read_track(fname = base_info.track_fname)
 ##
 var    = defs['elev']
@@ -493,9 +498,9 @@ dv     = (vmax-vmin)/50.0
 levels = np.arange(vmin,vmax+dv,dv)
 ##
 
-keys = np.sort(base_info.cases.keys())
+keys = np.sort(list(base_info.cases.keys()))
 for key in keys:
-    print '  > ', key
+    print ('  > ', key)
     maxelevf  =  base_info.cases[key]['dir'] + '/maxele.63.nc'
     ncmaxelev = n4.Dataset(maxelevf,'r')
     elev_max  = ncmaxelev.variables['zeta_max'][:]
@@ -503,12 +508,14 @@ for key in keys:
     lat       = ncmaxelev.variables['y'][:]
     depth     = ncmaxelev.variables['depth'][:]
     zeta1     = ncmaxelev.variables['zeta_max'][:]
+     
     mask      = zeta1 < 0
+    zeta1[zeta1.mask] = 0.0
     val       = zeta1 
     ncmaxelev.close()
 
     #
-    fig, ax = adcp.make_map()
+    fig, ax = pr.make_map()
     fig.set_size_inches(9,9)
     
     lim = get_region_extent(region = base_info.regions[0])
@@ -520,10 +527,10 @@ for key in keys:
     cond1 = ax.tricontour(tri,depth+0.1 ,levels=[0.0]  ,colors='k',lw=0.01, alpha= 0.5)
     
     if True:
-        cmap_   = cmaps.cmap_brightened (cmaps.jetMinWi,factor=0.75)
+        #cmap_   = cmaps.cmap_brightened (cmaps.jetMinWi,factor=0.75)
         cmap  =                       (cmaps.jetMinWi)
         #cmap  = cmaps.jetWoGn()
-        cf1    = ax.tricontourf(tri,val,levels=levels, cmap = cmap_ , extend='both',alpha = 1.0)#extend='max' )  #,extend='both'
+        cf1    = ax.tricontourf(tri,val,levels=levels, cmap = cmap , extend='both',alpha = 1.0)#extend='max' )  #,extend='both'
         #cf1   = ax.tripcolor(tri,val, cmap = cmap, vmin = vmin , vmax = vmax)#extend='max' )  #,extend='both'
         cb     = plt.colorbar(cf1,shrink = 0.15,ticks = [vmin,(vmin+vmax)/2,vmax])   
         cb.set_label('TWL [m]')
@@ -553,7 +560,7 @@ for key in keys:
 #sys.exit()
     
 ################
-print '[info:] plot Taylor Dig.'
+print ('[info:] plot Taylor Dig.')
 
 from pynmd.plotting import taylor
 markersize = 6
@@ -565,10 +572,10 @@ refstd = data.std(ddof=1)
 # Taylor diagram
 dia = taylor.TaylorDiagram(refstd, fig=fig, rect=111, label="Reference")
  
-colors = plt.matplotlib.cm.jet(np.linspace(0,1,len(taylor_data.keys())))
+colors = plt.matplotlib.cm.jet(np.linspace(0,1,len(list(taylor_data.keys()))))
  
 # Add samples to Taylor diagram
-for imodel in range(len(taylor_data.keys())):
+for imodel in range(len(list(taylor_data.keys()))):
     key      = model_keys[imodel]
     #key      = taylor_data.keys()[imodel]
     stddev   = taylor_data[key][0]
@@ -604,7 +611,7 @@ plt.savefig(out_dir+ '/taylor_HWM' + ftype,dpi=dpi)
 plt.close('all')
 
 ####################################
-print '[info:] plot stats on fig ..'
+print ('[info:] plot stats on fig ..')
 params = ['cor', 'r2', 'rmse', 'rbias', 'bias', 'mae', 'peak', 'ia', 'skill']
 params = ['cor','rmse', 'rbias', 'bias', 'peak', 'ia']
 nall = len(params)
@@ -627,7 +634,7 @@ axgrid = np.array(axgrid)
 axgrid = axgrid.reshape(icol*irow)
 
 nn = -1
-colors = plt.matplotlib.cm.jet(np.linspace(0,1,len(base_info.cases.keys())))
+colors = plt.matplotlib.cm.jet(np.linspace(0,1,len(list(base_info.cases.keys()))))
 
 for param in params:
     nn += 1
@@ -651,7 +658,7 @@ for param in params:
         imodel += 1
         
     #ylab = string.capitalize ('abs('+param+')' )  
-    ylab = string.capitalize (param)  
+    ylab = param.capitalize()  
 
     ax.set_ylabel( ylab)
     #plt.setp( ax, 'xticklabels', [] )
@@ -687,7 +694,7 @@ if pandas_plots:
     ext_min = defs['elev']['vmin']
     ext_max = defs['elev']['vmax']
     #############
-    print '[info:] plot matrix'
+    print ('[info:] plot matrix')
     plt.figure()
     g = sns.PairGrid(dfa, diag_sharey=False)
     g.map_lower(sns.kdeplot, cmap="Blues_d")

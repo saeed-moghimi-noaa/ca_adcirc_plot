@@ -10,7 +10,7 @@ __version__ = "1.0"
 __email__ = "moghimis@gmail.com"
 
 
-from   pynmd.plotting.vars_param import *
+from   vars_param import *
 
 def get_region_extent(region = 'hsofs_region'):
     if region == 'hsofs_region':
