@@ -15,18 +15,17 @@ https://drive.google.com/file/d/1iIjEZ5B7i9lzzyX5_s2kefbosZwNN1Q4/view?usp=shari
 
 ## Howto
 
-'''
+```
 conda activate plot_adc
+```
 
-'''
+Edit base_info_flo.py to include location of obs and model result (runs) folders.
 
-edit base_info_flo.py to include location of obs and model result (runs) folders.
-
-'''
+```
 ln -s  base_info_flo.py   base_info.py
 ipython --pylab
 ...
 In [1]: run plot_hwm.py  
 In [2]: run plot_maps.py 
 In [3]: run plot_time_seris_csv.py
-'''
+```
