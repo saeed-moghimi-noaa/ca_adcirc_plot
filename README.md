@@ -1,6 +1,9 @@
 # CA plot routines
 Python routines to plot adcirc results
-
+```
+git clone --recursive https://github.com/saeed-moghimi-noaa/ca_adcirc_plot
+cd ca_adcirc_plot
+```
 ## Contact
 Saeed.Moghimi@noaa.gov
 
