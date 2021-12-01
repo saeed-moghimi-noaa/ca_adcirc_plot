@@ -23,8 +23,8 @@ __email__ = "moghimis@gmail.com"
 #from   collections import defaultdict
 import os,sys
 
-sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
-sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
+#sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
+#sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
 
 
 from   pynmd.plotting.vars_param import *
@@ -286,8 +286,8 @@ def plot_track(ax,track,date=None,color = 'r'):
     ax.plot(track['lon'],track['lat'],lw=3,color=color,ls='dashed',alpha=1)
 
 
-sys.path.append('/home/Saeed.Moghimi/opt/pycodes/csdlpy/')
-import adcirc
+#sys.path.append('/home/Saeed.Moghimi/opt/pycodes/csdlpy/')
+#import adcirc
 from atcf import readTrack
 
 def read_track(fname=None):

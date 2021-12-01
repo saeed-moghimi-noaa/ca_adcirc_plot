@@ -40,7 +40,7 @@ plot_nems_fields    = False
 plot_forcing_files  = False
 plot_nwm_files      = False
 plot_transects      = False
-plot_mesh           = True
+plot_mesh           = False
 vec                 = False
 local_bias_cor      = True
 

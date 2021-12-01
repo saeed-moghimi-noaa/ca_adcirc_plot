@@ -393,13 +393,13 @@ os.system('cp -fr  '+scr_name +'    '+scr_dir)
 os.system('cp -fr     *.py     '     + scr_dir)
 #
 # read base_run only_tide time info
-fname  = base_info.cases[base_info.key0]['dir'] + '/fort.63.nc'
+fname  = base_info.cases[base_info.key0]['dir'] + '/maxele.63.nc'
 nc0    = netCDF4.Dataset(fname)
 ncv0   = nc0.variables
 depth  = ncv0['depth'][:]
 depth [depth < -10] = -10
-dates0 = netCDF4.num2date(ncv0['time'][:],ncv0['time'].units) 
-indd0   = np.array(np.where((dates0 > base_info.tim_lim['xmin'] )&(dates0<base_info.tim_lim['xmax'])  )).squeeze()
+#dates0 = netCDF4.num2date(ncv0['time'][:],ncv0['time'].units) 
+#indd0   = np.array(np.where((dates0 > base_info.tim_lim['xmin'] )&(dates0<base_info.tim_lim['xmax'])  )).squeeze()
 lon   = ncv0['x'][:]
 lat   = ncv0['y'][:]
 elems  = ncv0['element'][:,:]-1  # Move to 0-indexing by subtracting 1
