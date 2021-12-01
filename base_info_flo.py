@@ -11,7 +11,7 @@ __version__ = "1.0"
 __email__ = "moghimis@gmail.com"
 
 
-from   vars_param import *
+from   pynmd.plotting.vars_param import *
 from   collections import defaultdict
 import datetime
 import os
@@ -79,7 +79,7 @@ if True:
     cases[key]['wdir_file'] = None
     key1 = key 
 
-out_dir  = base_dir_sm  + '/06_post_coupled/p4/'
+out_dir  = base_dir_sm  + '/06_post_coupled/p5/'
 
 ##### Variable Limits Settings 
 tim_lim = {}

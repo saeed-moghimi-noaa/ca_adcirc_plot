@@ -27,16 +27,19 @@ sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
 sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
 
 
-from   vars_param import *
+from   pynmd.plotting.vars_param import *
 from   pynmd.plotting import plot_routines as pr
 from   pynmd.plotting import plot_settings as ps
+from   pynmd.plotting import colormaps as cmaps
+from   pynmd.models.adcirc.post import adcirc_post as adcp
+from   pynmd.tools.compute_statistics import find_nearest1d,statatistics
+
 import time
 from scipy import stats
 from geo_regions import get_region_extent
 #import cPickle as pickle
-from pynmd.models.adcirc.post import adcirc_post as adcp
-from   pynmd.tools.compute_statistics import find_nearest1d,statatistics
 import matplotlib.pyplot as plt
+import matplotlib.tri as Tri
 import numpy as np
 import datetime
 import string
@@ -46,7 +49,6 @@ import string
 import pandas as pd
 import netCDF4 as n4
 import seaborn as sns
-import colormaps as cmaps
 
 
 #sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
@@ -317,7 +319,16 @@ def read_track(fname=None):
 print ('\n\n\n Storm:    ', base_info.name,'\n\n\n')
 
 #for map plot
-lon,lat,tri  = adcp.ReadTri(base_info.cases[base_info.key1]['dir'])
+if False:
+    lon,lat,tri  = adcp.ReadTri(base_info.cases[base_info.key1]['dir'])
+else:
+    fname  =  base_info.cases[base_info.key0]['dir'] + '/maxele.63.nc'
+    nc0    = n4.Dataset(fname)
+    ncv0   = nc0.variables
+    lon   = ncv0['x'][:]
+    lat   = ncv0['y'][:]
+    elems  = ncv0['element'][:,:]-1  # Move to 0-indexing by subtracting 1
+    tri = Tri.Triangulation(lon,lat, triangles=elems)
 
 # Read hwm from csv file
 df = pd.read_csv(base_info.hwm_fname)

@@ -47,7 +47,7 @@ from dateutil import parser
 
 #sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
 #import adcirc
-from csdlpy.atcf import readTrack
+from atcf import readTrack
 
 try:
     os.system('rm base_info.pyc'  )
@@ -68,7 +68,7 @@ if 'geo_regions' in sys.modules:
     del(sys.modules["geo_regions"])
 from geo_regions import get_region_extent    
 
-#import matplotlib.tri as Tri
+import matplotlib.tri as Tri
 #from dateutil import parser
 #import glob
 
@@ -342,8 +342,6 @@ def get_uv(ind1=None):
     nc1.close()
     return u,v
 
-
-
 def read_track(fname=None):
     if fname is None:
         fname = '/scratch4/COASTAL/coastal/save/Saeed.Moghimi/models/NEMS/NEMS_inps/01_data/tracks/ike_bal092008.dat'
@@ -402,6 +400,9 @@ depth  = ncv0['depth'][:]
 depth [depth < -10] = -10
 dates0 = netCDF4.num2date(ncv0['time'][:],ncv0['time'].units) 
 indd0   = np.array(np.where((dates0 > base_info.tim_lim['xmin'] )&(dates0<base_info.tim_lim['xmax'])  )).squeeze()
+lon   = ncv0['x'][:]
+lat   = ncv0['y'][:]
+elems  = ncv0['element'][:,:]-1  # Move to 0-indexing by subtracting 1
 nc0.close()
 #
 fname  = base_info.cases[base_info.key1]['dir'] + '/fort.63.nc'
@@ -412,7 +413,10 @@ indd1   = np.array(np.where((dates1 > base_info.tim_lim['xmin'] )&(dates1<base_i
 nc1.close()
 #
 #construct HSOFS Tri mask
-lon,lat,tri  = adcp.ReadTri(base_info.cases[base_info.key0]['dir'])
+#lon,lat,tri  = adcp.ReadTri(base_info.cases[base_info.key0]['dir'])
+tri = Tri.Triangulation(lon,lat, triangles=elems)
+
+
 #                    
 print (base_info.cases[base_info.key1]['dir'])
 #
@@ -562,7 +566,7 @@ if base_info.plot_adc_maxele:
         lat0   = ncv0['y'][:]
         elems  = ncv0['element'][:,:]-1  # Move to 0-indexing by subtracting 1
         zeta0[zeta0.mask] = 0.0
-        #tri = Tri.Triangulation(lon0,lat0, triangles=elems)
+        tri = Tri.Triangulation(lon0,lat0, triangles=elems)
         
         
         date = None
@@ -589,7 +593,7 @@ if base_info.plot_adc_maxele:
             step = 0.5  #m
             levels = np.arange(vmin, vmax+step, step=step)
             #contour = ax.tricontourf(tri, zeta0,levels=levels,cmap = my_cmap ,extend='max')
-            cf1 = ax.tricontourf(tri,zeta0,levels=levels, cmap = my_cmap , extend='both')#extend='max' )  #,extend='both'
+            cf1 = ax.tricontourf(tri,zeta0,levels=levels, cmap = cmaps.jetMinWi, extend='both')#extend='max' )  #,extend='both'
             
             # set scale for vertical vector plots
             pos_ax   = np.array (ax.get_position ())
