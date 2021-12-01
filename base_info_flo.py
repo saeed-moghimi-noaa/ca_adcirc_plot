@@ -145,9 +145,9 @@ defs['wind']['fname'] = 'fort.74.nc'
 varnames = ['elev']
 
 ##### SELECLT GEO REGION TO PLOT ########################
-#regions = ['isa_landfall_zoom','isa_landfall','isa_local','isa_region','hsofs_region']
+regions = ['isa_landfall_zoom'] #,'isa_landfall','isa_local','isa_region','hsofs_region']
 #regions = ['hsofs_region']
-regions = ['isa_region']
+#regions = ['isa_region']
 
 
 station_selected_list = None 

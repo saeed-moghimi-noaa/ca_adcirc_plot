@@ -18,8 +18,8 @@ __email__ = "moghimis@gmail.com"
 
 
 import os,sys
-sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
-sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
+#sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/')
+#sys.path.append('/home/moghimis/linux_working/00-working/04-test-adc_plot/csdlpy')
 
 
 
@@ -375,8 +375,8 @@ def do_tappy_tide_analysis(dates, val):
     return  yd_time , ft_lev_new
 
 
-sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
-import adcirc
+#sys.path.append('/scratch2/COASTAL/coastal/save/Saeed.Moghimi/opt/pycodes/csdlpy')
+#import adcirc
 from atcf import readTrack
 
 def plot_track(ax,track,date=None,color = 'r'):
@@ -416,7 +416,7 @@ def read_track(fname=None):
 def plot_map(sta_tab=[],comm_tab=[],prefix='',iplot=0):
         print ('Plot map for recording points ...')
         #construct HSOFS Tri mask
-        fname  = base_info.cases[base_info.key1]['dir'] + '/fort.63.nc'
+        fname  = base_info.cases[base_info.key1]['dir'] + '/maxele.63.nc'
         nc0    = netCDF4.Dataset(fname)
         ncv0   = nc0.variables
         depth  = ncv0['depth'][:]

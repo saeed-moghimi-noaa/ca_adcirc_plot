@@ -405,11 +405,11 @@ lat   = ncv0['y'][:]
 elems  = ncv0['element'][:,:]-1  # Move to 0-indexing by subtracting 1
 nc0.close()
 #
-fname  = base_info.cases[base_info.key1]['dir'] + '/fort.63.nc'
+fname  = base_info.cases[base_info.key1]['dir'] + '/maxele.63.nc'
 nc1     = netCDF4.Dataset(fname)
 ncv1    = nc1.variables
-dates1 = netCDF4.num2date(ncv1['time'][:],ncv1['time'].units) 
-indd1   = np.array(np.where((dates1 > base_info.tim_lim['xmin'] )&(dates1<base_info.tim_lim['xmax'])  )).squeeze()
+#dates1 = netCDF4.num2date(ncv1['time'][:],ncv1['time'].units) 
+#indd1   = np.array(np.where((dates1 > base_info.tim_lim['xmin'] )&(dates1<base_info.tim_lim['xmax'])  )).squeeze()
 nc1.close()
 #
 #construct HSOFS Tri mask
@@ -441,10 +441,10 @@ if base_info.plot_adc_fort:
             print ('-------------------------------------------')
             for region in base_info.regions:
                 lim = get_region_extent(region = region)
-                date  = dates1[ind1]
+                #date  = dates1[ind1]
                 # find matching index for new netcdf file 
 
-                print (ind1, region ,varname, date)
+                print (ind1, region ,varname)#, date)
                 
                 try:
                     pres =  get_val('pmsl',ind1)
