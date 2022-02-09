@@ -11,6 +11,8 @@ __email__ = "moghimis@gmail.com"
 
 
 from   pynmd.plotting.vars_param import *
+from   pandas import read_csv
+from   base_info import mesh_dir
 
 def get_region_extent(region = 'hsofs_region'):
     if region == 'hsofs_region':
@@ -18,6 +20,18 @@ def get_region_extent(region = 'hsofs_region'):
         defs['lim']['xmax']  = -52.8
         defs['lim']['ymin']  =  5.0
         defs['lim']['ymax']  =  46.3
+    ## READ WIND SWATH
+    else: 
+        df = read_csv(mesh_dir + region + '.txt',header=None)
+        buff = 0.5
+        defs['lim']['xmin']  = df.min()[0] - buff
+        defs['lim']['xmax']  = df.max()[0] + buff
+        defs['lim']['ymin']  = df.min()[1] - buff
+        defs['lim']['ymax']  = df.max()[1] + buff
+
+    return defs['lim']
+
+'''  
     ##IKE
     elif region == 'caribbean':
         defs['lim']['xmin']  = -78. 
@@ -280,9 +294,4 @@ def get_region_extent(region = 'hsofs_region'):
         defs['lim']['ymin']  =  29.00
         defs['lim']['ymax']  =  31.01 
 
-
-    
-    return defs['lim']
-
-
-    
+'''
