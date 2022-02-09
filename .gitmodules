@@ -1,3 +1,6 @@
 [submodule "pynmd_will"]
 	path = pynmd_will
 	url = git@github.com:WPringle/pynmd.git
+[submodule "pynmd"]
+	path = pynmd
+	url = git@github.com:WPringle/pynmd.git
