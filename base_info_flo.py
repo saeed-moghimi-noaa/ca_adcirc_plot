@@ -22,10 +22,10 @@ os.environ["CARTOPY_USER_BACKGROUNDS"] = os.path.join('BG/')
 cases = defaultdict(dict)
 
 #### INPUTS ####
-base_dir_sm   = '/home/moghimis/linux_working/00-working/04-test-adc_plot/runs/flo/'
-track_fname   = '/home/moghimis/linux_working/00-working/04-test-adc_plot/obs/best_tracks/florence_bal062018.dat'
-hwm_fname     = '/home/moghimis/linux_working/00-working/04-test-adc_plot/obs/obs_all/hwm/florence2018.csv'
-base_dir_obs        = '/home/moghimis/linux_working/00-working/04-test-adc_plot/obs/obs_all/'
+base_dir_sm   = '../runs/flo/'
+track_fname         = '../obs/best_tracks/florence_bal062018.dat'
+hwm_fname           = '../obs/obs_all/hwm/florence2018.csv'
+base_dir_obs        = '../obs/obs_all/'
 nwm_channel_pnts    = None
 nwm_channel_geom    = None
 nwm_results_dir     = None

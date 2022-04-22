@@ -672,8 +672,8 @@ if plot_timeseries:
                     
                         print (header)
      
-                        defs['elev']['vmin'] = 1.2 * max(ssh[indo].max().values,mod[indm].max().values ).astype(float)
-                        defs['elev']['vmax'] = 1.1 * min(ssh[indo].min().values,mod[indm].min().values ).astype(float)
+                        defs['elev']['vmax'] = 1.2 * max(ssh[indo].max().values,mod[indm].max().values ).astype(float)
+                        defs['elev']['vmin'] = 1.1 * min(ssh[indo].min().values,mod[indm].min().values ).astype(float)
                         
                         
                         # model
