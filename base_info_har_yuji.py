@@ -62,7 +62,10 @@ local_bias_cor      = True
 #HWM proximity limit
 prox_max = 0.0075 * 1  #grid size * n
 
-if True:
+## NOTE <<<
+## for HWM plot make this False <<<
+## for map and timeseries you can make this True <<<
+if False:
     #Base run only tide
     key  = '00-atm:n-tid:y-wav:n'
     cases[key]['dir']    = base_dir_sm + '/harvey.tide_baserun.20220324/run/'
@@ -76,16 +79,16 @@ if True:
     key  = '00-atm:y-tid:y-wav:n'
 
     cases[key]['dir']    = base_dir_sm + '/harvey.atm2ocn.20220324.nooffset/run/'
-    cases[key]['label']  = 'ATM'
+    cases[key]['label']  = 'No offset'
     cases[key]['hsig_file'] = None
     cases[key]['wdir_file'] = None
-    #key1 = key
+    key0 = key
 
 if True:
     #2way wav-ocn
     key  = '00-atm:y-tid:y-wav:y'
     cases[key]['dir']    = base_dir_sm + '/harvey.atm2ocn.20220324.7doffset/run/'
-    cases[key]['label']  = 'ATM&WAV'
+    cases[key]['label']  = 'Offset'
     cases[key]['hsig_file'] = None
     cases[key]['wdir_file'] = None
     key1 = key
@@ -99,25 +102,26 @@ out_dir  = '../yuji_plots/ca_adcirc_plot/2017_harvey/'
 
 #########################  Variable Limits Settings ####################################
 tim_lim = {}
-tim_lim['xmin'] = datetime.datetime(2017, 8, 17,12)
-tim_lim['xmax'] = datetime.datetime(2017, 8, 31,12)
+tim_lim['xmin'] = datetime.datetime(2017, 8, 20)
+tim_lim['xmax'] = datetime.datetime(2017, 9, 2)
 #tim_lim['xmin'] = datetime.datetime(2017, 8, 17,12) - datetime.timedelta(2)
 #tim_lim['xmax'] = datetime.datetime(2017, 8, 17,12) + datetime.timedelta(2)
 
 #### Deffinitions 
-if True:
+if False:
     # key1 - key0 >> key0 is tide
     defs['elev']['cmap']  =  maps.jetMinWi
     defs['elev']['label']  =  'Surge [m]'
     defs['elev']['vmin']  =  0
-    defs['elev']['vmax']  =  5
+    defs['elev']['vmax']  =  2
     
 else:
     # key1 - key0 >> key0 is run without wave
-    defs['elev']['label']  =  'Wave set-up [m]'
-    defs['elev']['cmap']   =  maps.jetWoGn()
-    defs['elev']['vmin']  =  -0.5
-    defs['elev']['vmax']  =   0.5
+    defs['elev']['label']  =  'Diff [m]'
+    #defs['elev']['cmap']  =  maps.jetWoGn()
+    defs['elev']['cmap']   =  plt.cm.jet
+    defs['elev']['vmin']  =  -3
+    defs['elev']['vmax']  =   3
 
 #rad-stress
 defs['rad']['vmin']  =  0.0
@@ -167,7 +171,31 @@ regions = ['ike_region','hsofs_region','ike_local','ike_galv_bay']
 #regions = ['hsofs_region']
 
 
-station_selected_list = None 
+station_selected_list = True 
+
+station_selected_list =  [
+    '8764227',
+    '8764044',
+    '8770475',
+    '8768094',
+    '8770520',
+    '8770777',
+    '8770971',
+    '8771013',
+    '8771341',
+    '8771450',
+    '8772447',
+    '8773259',
+    '8773701',
+    '8775237',
+    '8775296',
+    '8775870',
+    ]
+
+
+
+
+
 
 
 """
