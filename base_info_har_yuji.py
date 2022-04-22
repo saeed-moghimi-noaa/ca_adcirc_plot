@@ -77,7 +77,6 @@ if False:
 if True:
     #
     key  = '00-atm:y-tid:y-wav:n'
-
     cases[key]['dir']    = base_dir_sm + '/harvey.atm2ocn.20220324.nooffset/run/'
     cases[key]['label']  = 'No offset'
     cases[key]['hsig_file'] = None
@@ -98,7 +97,7 @@ if True:
 #out_dir  = '/scratch2/COASTAL/coastal/noscrub/Yuji.Funakoshi/ca_adcirc_plot/2017_harvey/'
 
 
-out_dir  = '../yuji_plots/ca_adcirc_plot/2017_harvey/'
+out_dir  = '../yuji_plots/ca_adcirc_plot/2017_harvey/p1_diff_tide/'
 
 #########################  Variable Limits Settings ####################################
 tim_lim = {}
@@ -108,20 +107,25 @@ tim_lim['xmax'] = datetime.datetime(2017, 9, 2)
 #tim_lim['xmax'] = datetime.datetime(2017, 8, 17,12) + datetime.timedelta(2)
 
 #### Deffinitions 
-if False:
+
+
+## Suggestion!! <<<
+## for HWM and map surge plots make this True <<<
+## for diff map plots make this False <<<
+if True:
     # key1 - key0 >> key0 is tide
     defs['elev']['cmap']  =  maps.jetMinWi
     defs['elev']['label']  =  'Surge [m]'
     defs['elev']['vmin']  =  0
-    defs['elev']['vmax']  =  2
+    defs['elev']['vmax']  =  0.5
     
 else:
     # key1 - key0 >> key0 is run without wave
     defs['elev']['label']  =  'Diff [m]'
     #defs['elev']['cmap']  =  maps.jetWoGn()
     defs['elev']['cmap']   =  plt.cm.jet
-    defs['elev']['vmin']  =  -3
-    defs['elev']['vmax']  =   3
+    defs['elev']['vmin']  =  -0.5
+    defs['elev']['vmax']  =   0.5
 
 #rad-stress
 defs['rad']['vmin']  =  0.0
@@ -167,9 +171,9 @@ varnames = ['elev']
 
 ##### SELECLT GEO REGION TO PLOT ########################
 #regions = ['isa_landfall_zoom'] #,'isa_landfall','isa_local','isa_region','hsofs_region']
-regions = ['ike_region','hsofs_region','ike_local','ike_galv_bay']
+#regions = ['har_region','har_local','ike_region','hsofs_region','ike_local','ike_galv_bay']
 #regions = ['hsofs_region']
-
+regions = ['har_region','har_local','ike_region']
 
 station_selected_list = True 
 

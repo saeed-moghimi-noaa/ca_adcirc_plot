@@ -202,11 +202,11 @@ def plot_map(ax=None,tri=None,val=None,var=None,lim=None,dep=None, pres=None,no_
     vmin = var['vmin']
     vmax = var['vmax']
     
-    step = 0.5  #m
+    step = 0.2  #m
     levels = np.arange(vmin, vmax+step, step=step)
     
     #contour = ax.tricontourf(tri, zeta0,levels=levels,cmap = my_cmap ,extend='max')
-    cf1 = ax.tricontourf(tri,zeta0,levels=levels, cmap = cmap , extend='both')#extend='max' )  #,extend='both'  
+    cf1 = ax.tricontourf(tri,val,levels=levels, cmap = cmap , extend='both')#extend='max' )  #,extend='both'  
     cb  = plt.colorbar(cf1,cax=cbax,ticks = [vmin,(vmin+vmax)/2,vmax],format='%1.4g',orientation='vertical')      
     cb.set_label(var['label'])
 
@@ -586,7 +586,7 @@ if base_info.plot_adc_maxele:
         val = np.ma.masked_where(val<0,val)
         val[val==mask] = 0.0
         val[np.isnan(val)] = 0.0
-        
+        val[val.mask] = 0.0
         fig, ax = pr.make_map()
 
         if False:    

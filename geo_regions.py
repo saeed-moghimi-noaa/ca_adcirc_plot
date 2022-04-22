@@ -84,6 +84,17 @@ def get_region_extent(region = 'hsofs_region'):
         defs['lim']['xmax']  = -93.233053
         defs['lim']['ymin']  =  29.198490
         defs['lim']['ymax']  =  30.132224  
+    ### Harvey
+    elif region == 'har_region':
+        defs['lim']['xmin']  = -97.7 
+        defs['lim']['xmax']  = -90.0
+        defs['lim']['ymin']  =  26.7
+        defs['lim']['ymax']  =  30.6
+    elif region == 'har_local':
+        defs['lim']['xmin']  = -97.3 
+        defs['lim']['xmax']  = -95.9
+        defs['lim']['ymin']  =  27.3
+        defs['lim']['ymax']  =  29.1
        
 ##IRMA
     elif region == 'carib_irma':
