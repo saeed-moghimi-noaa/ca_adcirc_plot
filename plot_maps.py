@@ -38,7 +38,7 @@ from   pynmd.models.adcirc.post import adcirc_post as adcp
 from   pynmd.plotting import plot_routines as pr
 from   pynmd.plotting import plot_settings as ps
 from   pynmd.tools.gtime import roundTime
-from   pynmd.tools.gtime import find_nearest_time
+#from   pynmd.tools.gtime import find_nearest_time
 from   pynmd.plotting import colormaps as cmaps
 import pandas as pd
 
@@ -96,6 +96,23 @@ try:
 except:
    ftypes = ['png','pdf']
    ftypes = ['png']    
+
+
+
+
+def find_nearest_time(dates,date):
+    """
+    Return nearest time indexs
+    Inp: dates: timedate vector
+         date: timedate pint
+    Out: index
+    
+    """
+    dtsec = []
+    for tmp in dates:
+        dtsec.append( np.abs( (tmp-date).total_seconds()  ) )  
+    return np.argmin(dtsec)
+
 
 def plot_map_old(ax,tri,val,extent,vmin=None,vmax=None,dep=None,cmap=None):
 
@@ -410,9 +427,8 @@ nc0.close()
 fname  = base_info.cases[base_info.key1]['dir'] + '/maxele.63.nc'
 nc1     = netCDF4.Dataset(fname)
 ncv1    = nc1.variables
-#dates1 = netCDF4.num2date(ncv1['time'][:],ncv1['time'].units) 
-#indd1   = np.array(np.where((dates1 > base_info.tim_lim['xmin'] )&(dates1<base_info.tim_lim['xmax'])  )).squeeze()
 nc1.close()
+
 #
 #construct HSOFS Tri mask
 #lon,lat,tri  = adcp.ReadTri(base_info.cases[base_info.key0]['dir'])
@@ -438,12 +454,21 @@ if base_info.plot_nwm_files:
 #for region in ['ike_region']:
 #for varname in ['elev']:   
 if base_info.plot_adc_fort:
+    
+    fname  = base_info.cases[base_info.key1]['dir'] + '/fort.63.nc'
+    nc1    = netCDF4.Dataset(fname)
+    ncv1   = nc1.variables
+    dates1 = netCDF4.num2date(ncv1['time'][:],ncv1['time'].units) 
+    indd1   = np.array(np.where((dates1 > base_info.tim_lim['xmin'] )&(dates1<base_info.tim_lim['xmax'])  )).squeeze()
+    nc1.close()
+    
+    
     for varname in base_info.varnames:   
         for ind1 in indd1[::-1][:]:
             print ('-------------------------------------------')
             for region in base_info.regions:
                 lim = get_region_extent(region = region)
-                #date  = dates1[ind1]
+                date  = dates1[ind1]
                 # find matching index for new netcdf file 
 
                 print (ind1, region ,varname)#, date)
@@ -582,7 +607,7 @@ if base_info.plot_adc_maxele:
 
 
        
-        val = zeta1 - zeta0
+        val = zeta1 - zeta0 * 0
         val = np.ma.masked_where(val<0,val)
         val[val==mask] = 0.0
         val[np.isnan(val)] = 0.0
